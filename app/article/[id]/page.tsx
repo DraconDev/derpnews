@@ -41,9 +41,12 @@ export default async function ArticlePage({
     const article = await getArticle(parseInt(params.id));
 
     return (
-        <div className="min-h-screen bg-gray-50">
+        <div className="min-h-screen bg-gray-50 flex flex-col">
             <header className="bg-white shadow-sm">
-                <div className="container mx-auto px-4 py-6">
+                <div className="container mx-auto px-4 py-6 flex justify-between items-center">
+                    <Link href="/" className="text-4xl font-bold text-black hover:text-blue-600 transition-colors">
+                        DerpNews
+                    </Link>
                     <Link
                         href="/"
                         className="text-blue-600 hover:text-blue-800 transition-colors inline-flex items-center gap-2"
@@ -53,7 +56,7 @@ export default async function ArticlePage({
                 </div>
             </header>
 
-            <main className="container mx-auto px-4 py-8">
+            <main className="container mx-auto px-4 py-8 flex-grow">
                 <article className="max-w-3xl mx-auto bg-white rounded-lg shadow-sm p-8">
                     <h1 className="text-4xl font-bold text-black mb-4">
                         {article.title}
@@ -65,7 +68,7 @@ export default async function ArticlePage({
                         {article.content
                             .split("\n\n")
                             .map((paragraph, index) => (
-                                <p key={index} className="mb-4">
+                                <p key={index} className="mb-4 text-black">
                                     {paragraph}
                                 </p>
                             ))}
@@ -73,7 +76,7 @@ export default async function ArticlePage({
                 </article>
             </main>
 
-            <footer className="border-t mt-12 py-6 bg-white">
+            <footer className="bg-white mt-auto border-t py-6">
                 <div className="container mx-auto px-4 text-center text-black">
                     <p> 2024 DerpNews - AI-Generated Satire</p>
                 </div>
