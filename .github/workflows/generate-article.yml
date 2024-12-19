@@ -2,8 +2,8 @@ name: Generate Hourly Article
 
 on:
     schedule:
-        - cron: "0 * * * *" # Runs every hour
-    workflow_dispatch: # Allows manual triggering
+        - cron: "0 * * * *"
+    workflow_dispatch:
 
 jobs:
     generate:
@@ -11,7 +11,11 @@ jobs:
         steps:
             - name: Generate Article
               run: |
-                  curl -X POST \
+                  response=$(curl -X POST \
                   -H "Content-Type: application/json" \
                   -d '{"secret":"${{ secrets.CRON_SECRET }}"}' \
-                  ${{ secrets.SITE_URL }}/api/cron/generate
+                  ${{ secrets.SITE_URL }}/api/cron/generate -w "\n%{http_code}")
+                  echo "Response: $response"
+                  if [[ $(echo "$response" | tail -n1) != "200" ]]; then
+                    exit 1
+                  fi
