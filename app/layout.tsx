@@ -8,7 +8,7 @@ import DonationLink from "@/components/DonationLogo";
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
-    title: "DerpNews - AI-Generated Satirical News",
+    title: "DerpNews",
     description:
         "Your trusted source for AI-generated satirical news articles that may or may not make sense.",
     openGraph: {
