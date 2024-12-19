@@ -20,19 +20,19 @@ export default function GenerateButton() {
 
             const newArticle = await response.json();
             const currentPath = window.location.pathname;
-            
+
             // If we're on a single article page, navigate to the new article
-            if (currentPath.startsWith('/article/')) {
+            if (currentPath.startsWith("/article/")) {
                 router.push(`/article/${newArticle.id}`);
-            } 
+            }
             // If we're on the articles page or home, refresh the list
-            else if (currentPath === '/articles' || currentPath === '/') {
+            else if (currentPath === "/articles" || currentPath === "/") {
                 // Force a window focus event to trigger article refresh
-                window.dispatchEvent(new Event('focus'));
+                window.dispatchEvent(new Event("focus"));
             }
             // If we're anywhere else, go to home
             else {
-                router.push('/');
+                router.push("/");
             }
         } catch (error) {
             console.error("Error generating article:", error);
@@ -47,7 +47,7 @@ export default function GenerateButton() {
             onClick={generateArticle}
             disabled={isGenerating}
             type="submit"
-            className="relative group bg-slate-800 text-white font-semibold px-6 py-3 rounded-md
+            className="relative group bg-slate-800 text-white font-semibold px-2 md:px-6 py-2   rounded-md
                 border-2 border-cyan-500/20 hover:border-cyan-400/40
                 transition-all duration-300
                 before:absolute before:inset-0 before:bg-gradient-to-r before:from-cyan-600 before:to-blue-600
