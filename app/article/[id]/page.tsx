@@ -1,14 +1,14 @@
 "use client";
 import { ArticleType } from "@/src/db/schema";
-
 import Link from "next/link";
-
 import { notFound, useParams } from "next/navigation";
 import { useEffect, useState } from "react";
+import { Clock, ArrowLeft } from "lucide-react";
 
 export default function ArticlePage() {
     const { id } = useParams<{ id: string }>();
     const [article, setArticle] = useState<ArticleType | null>(null);
+
     useEffect(() => {
         async function getArticleById(id: number) {
             console.log(`Fetching article with ID: ${id}`);
@@ -19,7 +19,7 @@ export default function ArticlePage() {
                 notFound();
             }
             const [result] = await res.json();
-            // console.log(result);
+            console.log(result);
             setArticle(result);
         }
 
@@ -31,38 +31,26 @@ export default function ArticlePage() {
     }, [id]);
 
     return (
-        <main className="min-h-screen flex flex-col">
-            {/* Header */}
-            <header className="w-full bg-gradient-to-r from-purple-600 to-blue-600 text-white p-6 shadow-lg">
-                <div className="container mx-auto flex justify-between items-center">
-                    <h1 className="text-4xl font-bold tracking-tight hover:text-purple-200 transition-colors">
-                        <Link href="/">DerpNews</Link>
-                    </h1>
-                    <form action="/api/articles" method="POST">
-                        <button
-                            type="submit"
-                            className="bg-white text-purple-600 hover:bg-purple-100 font-semibold px-6 py-2 rounded-lg shadow-md transition-all hover:shadow-lg"
-                        >
-                            Generate New Article
-                        </button>
-                    </form>
-                </div>
-            </header>
-
+        <main className="min-h-screen flex flex-col bg-gradient-to-b from-slate-950 to-slate-900">
             {/* Article Content */}
             {article && (
-                <article className="container mx-auto flex-grow p-6">
-                    <div className="max-w-3xl mx-auto bg-white rounded-lg shadow-lg p-8 border border-gray-200">
+                <article className="container mx-auto flex-grow px-4 py-8">
+                    <div
+                        className="max-w-3xl mx-auto bg-slate-800/50 backdrop-blur-sm rounded-lg p-6 md:p-8 
+                        border border-slate-700/50 ring-1 ring-cyan-500/10
+                        animate-fade-in shadow-xl shadow-cyan-500/5"
+                    >
                         {/* Article Header */}
                         <header className="mb-8">
-                            <h1 className="text-4xl font-bold text-gray-900 mb-4">
+                            <h1 className="text-3xl md:text-4xl font-bold text-white mb-4 tracking-tight">
                                 {article.title}
                             </h1>
-                            <div className="flex items-center justify-between border-b border-gray-200 pb-4">
-                                <p className="text-xl text-gray-600 italic">
+                            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-slate-700/50 pb-4">
+                                <p className="text-lg text-slate-300 italic">
                                     {article.summary}
                                 </p>
-                                <time className="text-sm text-gray-500">
+                                <time className="flex items-center gap-2 text-sm text-slate-400 whitespace-nowrap">
+                                    <Clock size={14} />
                                     {new Date(
                                         article.createdAt
                                     ).toLocaleDateString()}
@@ -71,13 +59,18 @@ export default function ArticlePage() {
                         </header>
 
                         {/* Article Body */}
-                        <div className="prose prose-lg max-w-none">
+                        <div
+                            className="prose prose-invert prose-lg max-w-none 
+                            prose-p:text-slate-300 prose-headings:text-white
+                            prose-strong:text-white prose-blockquote:text-slate-300
+                            prose-a:text-cyan-400 hover:prose-a:text-cyan-300"
+                        >
                             {article.content
                                 .split("\n\n")
                                 .map((paragraph, index) => (
                                     <p
                                         key={index}
-                                        className="mb-6 text-gray-700 leading-relaxed"
+                                        className="mb-6 leading-relaxed"
                                     >
                                         {paragraph}
                                     </p>
@@ -85,15 +78,19 @@ export default function ArticlePage() {
                         </div>
 
                         {/* Article Footer */}
-                        <footer className="mt-12 pt-6 border-t border-gray-200">
-                            <div className="flex justify-between items-center">
+                        <footer className="mt-12 pt-6 border-t border-slate-700/50">
+                            <div className="flex flex-col md:flex-row gap-4 justify-between items-center">
                                 <Link
                                     href="/"
-                                    className="text-purple-600 hover:text-purple-800 font-medium flex items-center transition-colors"
+                                    className="flex items-center gap-2 text-cyan-400 hover:text-cyan-300 font-medium transition-colors group"
                                 >
-                                    ← Back to Articles
+                                    <ArrowLeft
+                                        size={16}
+                                        className="group-hover:-translate-x-1 transition-transform"
+                                    />
+                                    Back to Articles
                                 </Link>
-                                <span className="text-gray-500 text-sm">
+                                <span className="text-slate-400 text-sm">
                                     Generated by AI
                                 </span>
                             </div>
@@ -101,17 +98,6 @@ export default function ArticlePage() {
                     </div>
                 </article>
             )}
-
-            {/* Footer */}
-            <footer className="w-full bg-gray-100 border-t border-gray-200 py-6">
-                <div className="container mx-auto px-6 text-center text-gray-600">
-                    <p>
-                        {" "}
-                        {new Date().getFullYear()} DerpNews - Your Source for
-                        AI-Generated Satire
-                    </p>
-                </div>
-            </footer>
         </main>
     );
 }

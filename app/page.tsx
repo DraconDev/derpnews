@@ -2,6 +2,7 @@
 import { ArticleType } from "@/src/db/schema";
 import Link from "next/link";
 import { useEffect, useState } from "react";
+import { Clock, ChevronRight } from "lucide-react";
 
 async function getArticles(): Promise<ArticleType[]> {
     const response = await fetch("/api/articles");
@@ -16,6 +17,10 @@ export default function Home() {
 
     useEffect(() => {
         const fetchArticles = async () => {
+            if (!articles) {
+                const articlesData = await getArticles();
+                setArticles(articlesData);
+            }
             try {
                 const articlesData = await getArticles();
                 setArticles(articlesData);
@@ -27,67 +32,68 @@ export default function Home() {
     }, []);
 
     return (
-        <main className="min-h-screen flex flex-col">
+        <main className="min-h-screen flex flex-col bg-gradient-to-b from-slate-950 to-slate-900">
             {/* Header */}
-            <header className="w-full bg-gradient-to-r from-purple-600 to-blue-600 text-white p-6 shadow-lg">
-                <div className="container mx-auto flex justify-between items-center">
-                    <h1 className="text-4xl font-bold tracking-tight hover:text-purple-200 transition-colors">
-                        <Link href="/">DerpNews</Link>
-                    </h1>
-                    <form action="/api/articles" method="POST">
-                        <button
-                            type="submit"
-                            className="bg-white text-purple-600 hover:bg-purple-100 font-semibold px-6 py-2 rounded-lg shadow-md transition-all hover:shadow-lg"
-                        >
-                            Generate New Article
-                        </button>
-                    </form>
-                </div>
-            </header>
 
             {/* Articles Grid */}
-            <div className="container mx-auto flex-grow p-6">
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <div className="container mx-auto flex-grow px-4 py-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 animate-fade-in">
                     {articles &&
-                        articles.map((article) => (
+                        articles.map((article, index) => (
                             <Link
                                 key={article.id}
                                 href={`/article/${article.id}`}
                                 className="group"
+                                style={{
+                                    animationDelay: `${index * 100}ms`,
+                                }}
                             >
-                                <article className="bg-white rounded-lg shadow-md hover:shadow-xl p-6 transition-all duration-300 border border-gray-200 h-full flex flex-col">
-                                    <h2 className="text-xl font-bold mb-3 text-gray-900 group-hover:text-purple-600 transition-colors">
-                                        {article.title}
-                                    </h2>
-                                    <p className="text-gray-600 flex-grow">
-                                        {article.summary}
-                                    </p>
-                                    <div className="mt-4 text-sm text-gray-500 flex justify-between items-center">
-                                        <span>
-                                            {new Date(
-                                                article.createdAt
-                                            ).toLocaleDateString()}
-                                        </span>
-                                        <span className="text-purple-600 font-medium group-hover:translate-x-1 transition-transform">
-                                            Read more →
-                                        </span>
+                                <article
+                                    className="bg-slate-800/50 backdrop-blur-sm rounded-lg p-5 border border-slate-700/50 
+                                    hover:border-cyan-500/50 transition-all duration-300 h-full flex flex-col
+                                    hover:shadow-lg hover:shadow-cyan-500/5 hover:-translate-y-1
+                                    ring-1 ring-cyan-500/10 hover:ring-cyan-500/20"
+                                >
+                                    <div className="flex flex-col h-full">
+                                        <h2
+                                            className="text-lg font-semibold mb-3 text-white group-hover:text-cyan-400 
+                                            transition-colors line-clamp-2 tracking-tight"
+                                        >
+                                            {article.title}
+                                        </h2>
+                                        <p className="text-slate-300 text-sm flex-grow line-clamp-3 leading-relaxed">
+                                            {article.summary}
+                                        </p>
+                                        <div className="mt-4 flex justify-between items-center border-t border-slate-700/50 pt-4">
+                                            <div className="flex items-center gap-1.5 text-slate-400 text-xs">
+                                                <Clock size={12} />
+                                                <time
+                                                    dateTime={new Date(
+                                                        article.createdAt
+                                                    ).toLocaleDateString()}
+                                                >
+                                                    {new Date(
+                                                        article.createdAt
+                                                    ).toLocaleDateString()}
+                                                </time>
+                                            </div>
+                                            <span
+                                                className="flex items-center gap-0.5 text-cyan-400 text-sm font-medium 
+                                                group-hover:gap-2 transition-all duration-300"
+                                            >
+                                                Read more
+                                                <ChevronRight
+                                                    size={16}
+                                                    className="group-hover:translate-x-1 transition-transform"
+                                                />
+                                            </span>
+                                        </div>
                                     </div>
                                 </article>
                             </Link>
                         ))}
                 </div>
             </div>
-
-            {/* Footer */}
-            <footer className="w-full bg-gray-100 border-t border-gray-200 py-6">
-                <div className="container mx-auto px-6 text-center text-gray-600">
-                    <p>
-                        {" "}
-                        {new Date().getFullYear()} DerpNews - Your Source for
-                        AI-Generated Satire
-                    </p>
-                </div>
-            </footer>
         </main>
     );
 }
