@@ -457,7 +457,7 @@ const tones = [
     "conservatively radical",
     "minimally excessive",
     "seriously playful",
-    "methodically chaotic"
+    "methodically chaotic",
 ];
 
 const locations = [
@@ -638,7 +638,7 @@ const locations = [
     "Virtual virtue vault",
     "Blockchain blessing bank",
     "AI awakening arena",
-    "Quantum questing ground"
+    "Quantum questing ground",
 ];
 
 function getRandomElement<T>(array: T[]): T {
@@ -674,10 +674,13 @@ export function generatePrompt(): string {
 
     const fullPrompt = `${basePrompt}
 
+Response must be strictly in this JSON format
+
 The article should be humorous and absurd while maintaining a ${tone} news-like tone.
 Include quotes from relevant parties that highlight the absurdity of the situation.
 Add specific details that make the story more believable despite its ridiculousness.
 Format the response as JSON with the following structure:
+
 {
   "title": "A catchy, clickbait-style headline that captures the absurdity",
   "summary": "A brief 1-2 sentence summary that hooks the reader",

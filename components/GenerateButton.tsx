@@ -10,7 +10,7 @@ export default function GenerateButton() {
     const generateArticle = async () => {
         try {
             setIsGenerating(true);
-            const response = await fetch("/api/articles", {
+            const response = await fetch("/api/article", {
                 method: "POST",
             });
 
