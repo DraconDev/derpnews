@@ -11,7 +11,6 @@ export default function ArticlePage() {
 
     useEffect(() => {
         async function getArticleById(id: number) {
-            console.log(`Fetching article with ID: ${id}`);
             const res = await fetch(`/api/article?id=${id}`, {
                 method: "GET",
             });
@@ -19,7 +18,7 @@ export default function ArticlePage() {
                 notFound();
             }
             const [result] = await res.json();
-            console.log(result);
+
             setArticle(result);
         }
 

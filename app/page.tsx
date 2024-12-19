@@ -40,9 +40,9 @@ export default function Home() {
             fetchArticles();
         };
 
-        window.addEventListener('focus', handleRouteChange);
+        window.addEventListener("focus", handleRouteChange);
         return () => {
-            window.removeEventListener('focus', handleRouteChange);
+            window.removeEventListener("focus", handleRouteChange);
         };
     }, []);
 
