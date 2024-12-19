@@ -17,10 +17,6 @@ export default function Home() {
 
     useEffect(() => {
         const fetchArticles = async () => {
-            if (!articles) {
-                const articlesData = await getArticles();
-                setArticles(articlesData);
-            }
             try {
                 const articlesData = await getArticles();
                 setArticles(articlesData);
@@ -29,6 +25,25 @@ export default function Home() {
             }
         };
         fetchArticles();
+    }, []);
+
+    useEffect(() => {
+        const handleRouteChange = () => {
+            const fetchArticles = async () => {
+                try {
+                    const articlesData = await getArticles();
+                    setArticles(articlesData);
+                } catch (error) {
+                    console.error(error);
+                }
+            };
+            fetchArticles();
+        };
+
+        window.addEventListener('focus', handleRouteChange);
+        return () => {
+            window.removeEventListener('focus', handleRouteChange);
+        };
     }, []);
 
     return (

@@ -18,7 +18,22 @@ export default function GenerateButton() {
                 throw new Error("Failed to generate article");
             }
 
-            router.refresh();
+            const newArticle = await response.json();
+            const currentPath = window.location.pathname;
+            
+            // If we're on a single article page, navigate to the new article
+            if (currentPath.startsWith('/article/')) {
+                router.push(`/article/${newArticle.id}`);
+            } 
+            // If we're on the articles page or home, refresh the list
+            else if (currentPath === '/articles' || currentPath === '/') {
+                // Force a window focus event to trigger article refresh
+                window.dispatchEvent(new Event('focus'));
+            }
+            // If we're anywhere else, go to home
+            else {
+                router.push('/');
+            }
         } catch (error) {
             console.error("Error generating article:", error);
             alert("Failed to generate article. Please try again.");
