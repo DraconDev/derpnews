@@ -5,7 +5,7 @@ import { articles } from "@/src/db/schema";
 import { desc } from "drizzle-orm";
 import { log } from "@/src/utils/logger";
 
-function parseArticleContent(text: string) {
+export function parseArticleContent(text: string) {
     try {
         // First try direct JSON parse
         return JSON.parse(text);
