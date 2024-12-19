@@ -1,68 +1,93 @@
+"use client";
+import { ArticleType } from "@/src/db/schema";
 import Link from "next/link";
-import { db } from "@/src/db";
-import { articles } from "@/src/db/schema";
-import { desc } from "drizzle-orm";
-import GenerateButton from "./components/GenerateButton";
+import { useEffect, useState } from "react";
 
-async function getArticles() {
-    return await db.select().from(articles).orderBy(desc(articles.createdAt));
+async function getArticles(): Promise<ArticleType[]> {
+    const response = await fetch("/api/articles");
+    if (!response.ok) {
+        throw new Error("Failed to fetch articles");
+    }
+    return response.json();
 }
 
-export default async function Home() {
-    const newsArticles = await getArticles();
+export default function Home() {
+    const [articles, setArticles] = useState<ArticleType[]>();
+
+    useEffect(() => {
+        const fetchArticles = async () => {
+            try {
+                const articlesData = await getArticles();
+                setArticles(articlesData);
+            } catch (error) {
+                console.error(error);
+            }
+        };
+        fetchArticles();
+    }, []);
 
     return (
-        <div className="min-h-screen bg-gray-50 flex flex-col">
-            <header className="bg-white shadow-sm">
-                <div className="container mx-auto px-4 py-6 flex justify-between items-center">
-                    <h1 className="text-4xl font-bold text-black">
-                        DerpNews
+        <main className="min-h-screen flex flex-col">
+            {/* Header */}
+            <header className="w-full bg-gradient-to-r from-purple-600 to-blue-600 text-white p-6 shadow-lg">
+                <div className="container mx-auto flex justify-between items-center">
+                    <h1 className="text-4xl font-bold tracking-tight hover:text-purple-200 transition-colors">
+                        <Link href="/">DerpNews</Link>
                     </h1>
-                    <GenerateButton />
+                    <form action="/api/articles" method="POST">
+                        <button
+                            type="submit"
+                            className="bg-white text-purple-600 hover:bg-purple-100 font-semibold px-6 py-2 rounded-lg shadow-md transition-all hover:shadow-lg"
+                        >
+                            Generate New Article
+                        </button>
+                    </form>
                 </div>
             </header>
 
-            <main className="container mx-auto px-4 py-8 flex-grow">
-                <div className="grid gap-6 max-w-3xl mx-auto">
-                    {newsArticles.map((article) => (
-                        <article
-                            key={article.id}
-                            className="bg-white border rounded-lg p-6 hover:shadow-lg transition-shadow"
-                        >
+            {/* Articles Grid */}
+            <div className="container mx-auto flex-grow p-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    {articles &&
+                        articles.map((article) => (
                             <Link
+                                key={article.id}
                                 href={`/article/${article.id}`}
-                                className="block"
+                                className="group"
                             >
-                                <h2 className="text-2xl font-semibold mb-2 text-black hover:text-blue-600 transition-colors">
-                                    {article.title}
-                                </h2>
-                                <p className="text-black leading-relaxed">
-                                    {article.summary}
-                                </p>
-                                <div className="mt-4 text-blue-500 text-sm font-medium">
-                                    Read more →
-                                </div>
+                                <article className="bg-white rounded-lg shadow-md hover:shadow-xl p-6 transition-all duration-300 border border-gray-200 h-full flex flex-col">
+                                    <h2 className="text-xl font-bold mb-3 text-gray-900 group-hover:text-purple-600 transition-colors">
+                                        {article.title}
+                                    </h2>
+                                    <p className="text-gray-600 flex-grow">
+                                        {article.summary}
+                                    </p>
+                                    <div className="mt-4 text-sm text-gray-500 flex justify-between items-center">
+                                        <span>
+                                            {new Date(
+                                                article.createdAt
+                                            ).toLocaleDateString()}
+                                        </span>
+                                        <span className="text-purple-600 font-medium group-hover:translate-x-1 transition-transform">
+                                            Read more →
+                                        </span>
+                                    </div>
+                                </article>
                             </Link>
-                        </article>
-                    ))}
-
-                    {newsArticles.length === 0 && (
-                        <div className="text-center py-12 text-black">
-                            <p className="mb-4">No articles yet!</p>
-                            <p>
-                                Click the Generate button above to create your
-                                first article.
-                            </p>
-                        </div>
-                    )}
+                        ))}
                 </div>
-            </main>
+            </div>
 
-            <footer className="bg-white mt-auto border-t py-6">
-                <div className="container mx-auto px-4 text-center text-black">
-                    <p> 2024 DerpNews - AI-Generated Satire</p>
+            {/* Footer */}
+            <footer className="w-full bg-gray-100 border-t border-gray-200 py-6">
+                <div className="container mx-auto px-6 text-center text-gray-600">
+                    <p>
+                        {" "}
+                        {new Date().getFullYear()} DerpNews - Your Source for
+                        AI-Generated Satire
+                    </p>
                 </div>
             </footer>
-        </div>
+        </main>
     );
 }

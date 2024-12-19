@@ -1,86 +1,112 @@
-import { notFound } from "next/navigation";
+import { ArticleType } from "@/src/db/schema";
+
 import Link from "next/link";
-import { db } from "@/src/db";
-import { articles } from "@/src/db/schema";
-import { eq } from "drizzle-orm";
-import { log } from "@/src/utils/logger";
 
-async function getArticle(id: number) {
-    log("info", "Fetching article by ID", { id });
-
-    try {
-        const [article] = await db
-            .select()
-            .from(articles)
-            .where(eq(articles.id, id));
-
-        if (!article) {
-            log("warn", "Article not found", { id });
-            notFound();
-        }
-
-        log("info", "Successfully fetched article", {
-            id,
-            title: article.title,
-        });
-        return article;
-    } catch (error) {
-        log("error", "Error fetching article", {
-            id,
-            error: error instanceof Error ? error.message : "Unknown error",
-        });
-        throw error;
-    }
-}
+import { notFound } from "next/navigation";
 
 export default async function ArticlePage({
     params,
 }: {
     params: { id: string };
 }) {
-    const article = await getArticle(parseInt(params.id));
+    async function getArticleById(id: number): Promise<ArticleType> {
+        console.log(`Fetching article with ID: ${id}`);
+        const res = await fetch(`/api/article?id=${id}`, {
+            method: "GET",
+        });
+        if (!res.ok) {
+            notFound();
+        }
+        return res.json();
+    }
+
+    const paramsLocal = await params;
+    const article = await getArticleById(parseInt(paramsLocal.id));
+
+    if (!article) {
+        notFound();
+    }
 
     return (
-        <div className="min-h-screen bg-gray-50 flex flex-col">
-            <header className="bg-white shadow-sm">
-                <div className="container mx-auto px-4 py-6 flex justify-between items-center">
-                    <Link href="/" className="text-4xl font-bold text-black hover:text-blue-600 transition-colors">
-                        DerpNews
-                    </Link>
-                    <Link
-                        href="/"
-                        className="text-blue-600 hover:text-blue-800 transition-colors inline-flex items-center gap-2"
-                    >
-                        ← Back to Home
-                    </Link>
+        <main className="min-h-screen flex flex-col">
+            {/* Header */}
+            <header className="w-full bg-gradient-to-r from-purple-600 to-blue-600 text-white p-6 shadow-lg">
+                <div className="container mx-auto flex justify-between items-center">
+                    <h1 className="text-4xl font-bold tracking-tight hover:text-purple-200 transition-colors">
+                        <Link href="/">DerpNews</Link>
+                    </h1>
+                    <form action="/api/articles" method="POST">
+                        <button
+                            type="submit"
+                            className="bg-white text-purple-600 hover:bg-purple-100 font-semibold px-6 py-2 rounded-lg shadow-md transition-all hover:shadow-lg"
+                        >
+                            Generate New Article
+                        </button>
+                    </form>
                 </div>
             </header>
 
-            <main className="container mx-auto px-4 py-8 flex-grow">
-                <article className="max-w-3xl mx-auto bg-white rounded-lg shadow-sm p-8">
-                    <h1 className="text-4xl font-bold text-black mb-4">
-                        {article.title}
-                    </h1>
-                    <p className="text-xl text-black mb-8 leading-relaxed">
-                        {article.summary}
-                    </p>
+            {/* Article Content */}
+            <article className="container mx-auto flex-grow p-6">
+                <div className="max-w-3xl mx-auto bg-white rounded-lg shadow-lg p-8 border border-gray-200">
+                    {/* Article Header */}
+                    <header className="mb-8">
+                        <h1 className="text-4xl font-bold text-gray-900 mb-4">
+                            {article.title}
+                        </h1>
+                        <div className="flex items-center justify-between border-b border-gray-200 pb-4">
+                            <p className="text-xl text-gray-600 italic">
+                                {article.summary}
+                            </p>
+                            <time className="text-sm text-gray-500">
+                                {new Date(
+                                    article.createdAt
+                                ).toLocaleDateString()}
+                            </time>
+                        </div>
+                    </header>
+
+                    {/* Article Body */}
                     <div className="prose prose-lg max-w-none">
                         {article.content
                             .split("\n\n")
                             .map((paragraph, index) => (
-                                <p key={index} className="mb-4 text-black">
+                                <p
+                                    key={index}
+                                    className="mb-6 text-gray-700 leading-relaxed"
+                                >
                                     {paragraph}
                                 </p>
                             ))}
                     </div>
-                </article>
-            </main>
 
-            <footer className="bg-white mt-auto border-t py-6">
-                <div className="container mx-auto px-4 text-center text-black">
-                    <p> 2024 DerpNews - AI-Generated Satire</p>
+                    {/* Article Footer */}
+                    <footer className="mt-12 pt-6 border-t border-gray-200">
+                        <div className="flex justify-between items-center">
+                            <Link
+                                href="/"
+                                className="text-purple-600 hover:text-purple-800 font-medium flex items-center transition-colors"
+                            >
+                                ← Back to Articles
+                            </Link>
+                            <span className="text-gray-500 text-sm">
+                                Generated by AI
+                            </span>
+                        </div>
+                    </footer>
+                </div>
+            </article>
+
+            {/* Footer */}
+            <footer className="w-full bg-gray-100 border-t border-gray-200 py-6">
+                <div className="container mx-auto px-6 text-center text-gray-600">
+                    <p>
+                        {" "}
+                        {new Date().getFullYear()} DerpNews - Your Source for
+                        AI-Generated Satire
+                    </p>
                 </div>
             </footer>
-        </div>
+        </main>
     );
 }
