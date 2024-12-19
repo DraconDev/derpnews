@@ -1,31 +1,34 @@
+"use client";
 import { ArticleType } from "@/src/db/schema";
 
 import Link from "next/link";
 
-import { notFound } from "next/navigation";
+import { notFound, useParams } from "next/navigation";
+import { useEffect, useState } from "react";
 
-export default async function ArticlePage({
-    params,
-}: {
-    params: { id: string };
-}) {
-    async function getArticleById(id: number): Promise<ArticleType> {
-        console.log(`Fetching article with ID: ${id}`);
-        const res = await fetch(`/api/article?id=${id}`, {
-            method: "GET",
-        });
-        if (!res.ok) {
+export default function ArticlePage() {
+    const { id } = useParams<{ id: string }>();
+    const [article, setArticle] = useState<ArticleType | null>(null);
+    useEffect(() => {
+        async function getArticleById(id: number) {
+            console.log(`Fetching article with ID: ${id}`);
+            const res = await fetch(`/api/article?id=${id}`, {
+                method: "GET",
+            });
+            if (!res.ok) {
+                notFound();
+            }
+            const [result] = await res.json();
+            // console.log(result);
+            setArticle(result);
+        }
+
+        if (!id) {
             notFound();
         }
-        return res.json();
-    }
 
-    const paramsLocal = await params;
-    const article = await getArticleById(parseInt(paramsLocal.id));
-
-    if (!article) {
-        notFound();
-    }
+        getArticleById(parseInt(id));
+    }, [id]);
 
     return (
         <main className="min-h-screen flex flex-col">
@@ -47,55 +50,57 @@ export default async function ArticlePage({
             </header>
 
             {/* Article Content */}
-            <article className="container mx-auto flex-grow p-6">
-                <div className="max-w-3xl mx-auto bg-white rounded-lg shadow-lg p-8 border border-gray-200">
-                    {/* Article Header */}
-                    <header className="mb-8">
-                        <h1 className="text-4xl font-bold text-gray-900 mb-4">
-                            {article.title}
-                        </h1>
-                        <div className="flex items-center justify-between border-b border-gray-200 pb-4">
-                            <p className="text-xl text-gray-600 italic">
-                                {article.summary}
-                            </p>
-                            <time className="text-sm text-gray-500">
-                                {new Date(
-                                    article.createdAt
-                                ).toLocaleDateString()}
-                            </time>
-                        </div>
-                    </header>
-
-                    {/* Article Body */}
-                    <div className="prose prose-lg max-w-none">
-                        {article.content
-                            .split("\n\n")
-                            .map((paragraph, index) => (
-                                <p
-                                    key={index}
-                                    className="mb-6 text-gray-700 leading-relaxed"
-                                >
-                                    {paragraph}
+            {article && (
+                <article className="container mx-auto flex-grow p-6">
+                    <div className="max-w-3xl mx-auto bg-white rounded-lg shadow-lg p-8 border border-gray-200">
+                        {/* Article Header */}
+                        <header className="mb-8">
+                            <h1 className="text-4xl font-bold text-gray-900 mb-4">
+                                {article.title}
+                            </h1>
+                            <div className="flex items-center justify-between border-b border-gray-200 pb-4">
+                                <p className="text-xl text-gray-600 italic">
+                                    {article.summary}
                                 </p>
-                            ))}
-                    </div>
+                                <time className="text-sm text-gray-500">
+                                    {new Date(
+                                        article.createdAt
+                                    ).toLocaleDateString()}
+                                </time>
+                            </div>
+                        </header>
 
-                    {/* Article Footer */}
-                    <footer className="mt-12 pt-6 border-t border-gray-200">
-                        <div className="flex justify-between items-center">
-                            <Link
-                                href="/"
-                                className="text-purple-600 hover:text-purple-800 font-medium flex items-center transition-colors"
-                            >
-                                ← Back to Articles
-                            </Link>
-                            <span className="text-gray-500 text-sm">
-                                Generated by AI
-                            </span>
+                        {/* Article Body */}
+                        <div className="prose prose-lg max-w-none">
+                            {article.content
+                                .split("\n\n")
+                                .map((paragraph, index) => (
+                                    <p
+                                        key={index}
+                                        className="mb-6 text-gray-700 leading-relaxed"
+                                    >
+                                        {paragraph}
+                                    </p>
+                                ))}
                         </div>
-                    </footer>
-                </div>
-            </article>
+
+                        {/* Article Footer */}
+                        <footer className="mt-12 pt-6 border-t border-gray-200">
+                            <div className="flex justify-between items-center">
+                                <Link
+                                    href="/"
+                                    className="text-purple-600 hover:text-purple-800 font-medium flex items-center transition-colors"
+                                >
+                                    ← Back to Articles
+                                </Link>
+                                <span className="text-gray-500 text-sm">
+                                    Generated by AI
+                                </span>
+                            </div>
+                        </footer>
+                    </div>
+                </article>
+            )}
 
             {/* Footer */}
             <footer className="w-full bg-gray-100 border-t border-gray-200 py-6">
