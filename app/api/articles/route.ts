@@ -12,7 +12,8 @@ export async function GET() {
         const allArticles = await db
             .select()
             .from(articles)
-            .orderBy(desc(articles.createdAt));
+            .orderBy(desc(articles.createdAt))
+            .limit(1000);
 
         log("info", "Successfully fetched articles", {
             count: allArticles.length,
