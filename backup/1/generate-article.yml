@@ -1,0 +1,44 @@
+name: Generate Hourly Article
+
+on:
+    schedule:
+        - cron: "0 * * * *" # Run every hour
+    workflow_dispatch: # Allow manual triggers
+
+jobs:
+    generate:
+        runs-on: ubuntu-latest
+
+        env:
+            DATABASE_URL: ${{ secrets.DATABASE_URL }}
+            GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+            CRON_SECRET: ${{ secrets.CRON_SECRET }}
+            SITE_URL: ${{ secrets.SITE_URL }}
+
+        steps:
+            - name: Check required secrets
+              run: |
+                  if [ -z "$DATABASE_URL" ] || [ -z "$GEMINI_API_KEY" ] || [ -z "$CRON_SECRET" ] || [ -z "$SITE_URL" ]; then
+                    echo "Missing required secrets"
+                    exit 1
+                  fi
+
+            - name: Generate Article
+              id: generate
+              run: |
+                  response=$(curl -X POST "${{ secrets.SITE_URL }}/api/cron/generate" \
+                    -H "Content-Type: application/json" \
+                    -d "{\"secret\": \"$CRON_SECRET\"}" \
+                    -w "\n%{http_code}" \
+                    -s)
+
+                  status_code=$(echo "$response" | tail -n1)
+                  body=$(echo "$response" | sed '$d')
+
+                  echo "Response body: $body"
+                  echo "Status code: $status_code"
+
+                  if [ "$status_code" != "200" ]; then
+                    echo "Error: Received status code $status_code"
+                    exit 1
+                  fi
