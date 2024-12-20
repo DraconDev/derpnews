@@ -4,6 +4,12 @@ on:
     schedule:
         - cron: "0 * * * *"
     workflow_dispatch:
+        inputs:
+            reason:
+                description: "Testing"
+                required: false
+                type: string
+                default: "Manual trigger"
 
 jobs:
     generate:
@@ -13,9 +19,11 @@ jobs:
               run: |
                   response=$(curl -X POST \
                   -H "Content-Type: application/json" \
-                  -d '{"secret":"${{ secrets.CRON_SECRET }}"}' \
+                  -d "{\"secret\":\"${{ secrets.CRON_SECRET }}\"}" \
                   ${{ secrets.SITE_URL }}/api/cron/generate -w "\n%{http_code}")
+
                   echo "Response: $response"
+
                   if [[ $(echo "$response" | tail -n1) != "200" ]]; then
                     exit 1
                   fi
