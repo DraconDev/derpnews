@@ -52,6 +52,14 @@ export async function POST() {
         const article = parseArticleContent(rawArticle);
         log("debug", "Successfully parsed article content");
 
+        if (!article) {
+            log("error", "Failed to parse article content");
+            return NextResponse.json(
+                { error: "Failed to parse article content" },
+                { status: 500 }
+            );
+        }
+
         const [newArticle] = await db
             .insert(articles)
             .values(article)

@@ -13,7 +13,7 @@ export async function generateArticle() {
 
     try {
         const model = genAI.getGenerativeModel({
-            model: "gemini-2.0-fast-exp",
+            model: "gemini-2.0-flash-exp",
         });
         log("debug", "Initialized Gemini model");
 
@@ -27,17 +27,20 @@ export async function generateArticle() {
             throw new Error("Empty response from Gemini API");
         }
 
-        const response = result.response;
-        const text = response.text();
-
-        if (!text) {
-            log("error", "Empty text in Gemini response");
-            throw new Error("Empty text in Gemini response");
+        if (
+            !result.response.candidates ||
+            !result.response.candidates[0] ||
+            !result.response.candidates[0].content ||
+            !result.response.candidates[0].content.parts ||
+            !result.response.candidates[0].content.parts[0]
+        ) {
+            log("error", "No candidates in response from Gemini");
+            throw new Error("No candidates in response from Gemini API");
         }
 
-        log("debug", "Received response from Gemini", { response: text });
+        const response = result?.response?.candidates[0].content.parts[0].text;
 
-        return text;
+        return response ?? "";
     } catch (error) {
         log("error", "Error generating article", {
             error: error instanceof Error ? error.message : "Unknown error",
