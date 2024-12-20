@@ -80,17 +80,20 @@ export async function POST(request: Request) {
             const article = parseArticleContent(rawArticle);
 
             if (!article) {
-                log("error", "Failed to parse article content in route handler");
+                log(
+                    "error",
+                    "Failed to parse article content in route handler"
+                );
                 return NextResponse.json(
                     { error: "Failed to parse article content" },
                     { status: 500 }
                 );
             }
 
-            log("debug", "Article parsed successfully", { 
+            log("debug", "Article parsed successfully", {
                 title: article.title,
                 summaryLength: article.summary?.length,
-                contentLength: article.content?.length 
+                contentLength: article.content?.length,
             });
 
             const [newArticle] = await db
@@ -101,15 +104,15 @@ export async function POST(request: Request) {
             log("info", "Successfully created new article", {
                 id: newArticle.id,
                 title: newArticle.title,
-                timestamp: new Date().toISOString()
+                timestamp: new Date().toISOString(),
             });
 
-            return NextResponse.json({ 
+            return NextResponse.json({
                 success: true,
                 article: {
                     id: newArticle.id,
-                    title: newArticle.title
-                }
+                    title: newArticle.title,
+                },
             });
         } catch (error) {
             const errorMessage =
