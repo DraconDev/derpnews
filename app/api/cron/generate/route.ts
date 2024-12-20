@@ -27,66 +27,14 @@ export async function POST(request: Request) {
         );
     }
 
+    const { CRON_SECRET: secret } = await request.json();
+
+    if (secret !== CRON_SECRET) {
+        log("error", "Invalid secret provided");
+        return NextResponse.json({ error: "Invalid secret" }, { status: 401 });
+    }
+
     try {
-        // Log the raw request details for debugging
-        log("debug", "Incoming request", {
-            method: request.method,
-            headers: Object.fromEntries(request.headers.entries()),
-            url: request.url,
-        });
-
-        // Get the raw text first to debug the payload
-        const rawText = await request.text();
-        log("debug", "Raw request body", { body: rawText });
-
-        // If the body is empty, return early
-        if (!rawText) {
-            log("error", "Empty request body");
-            return NextResponse.json(
-                { error: "Request body is empty" },
-                { status: 400 }
-            );
-        }
-
-        // Try to parse the JSON
-        let body;
-        try {
-            body = JSON.parse(rawText);
-        } catch (error) {
-            log("error", "Failed to parse request body", {
-                error,
-                rawBody: rawText,
-            });
-            return NextResponse.json(
-                {
-                    error: "Invalid JSON in request body",
-                    details:
-                        error instanceof Error
-                            ? error.message
-                            : "Unknown parsing error",
-                },
-                { status: 400 }
-            );
-        }
-
-        const { secret } = body;
-
-        if (!secret) {
-            log("error", "No secret provided in request");
-            return NextResponse.json(
-                { error: "No secret provided" },
-                { status: 401 }
-            );
-        }
-
-        if (secret !== CRON_SECRET) {
-            log("error", "Invalid secret provided");
-            return NextResponse.json(
-                { error: "Unauthorized" },
-                { status: 401 }
-            );
-        }
-
         log("info", "Starting article generation");
         const rawArticle = await generateArticle();
 
