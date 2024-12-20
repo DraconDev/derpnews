@@ -3,7 +3,7 @@ import { generateArticle } from "@/src/services/gemini";
 import { db } from "@/src/db";
 import { articles } from "@/src/db/schema";
 import { log } from "@/src/utils/logger";
-import { parseArticleContent } from "../../articles/route";
+import { parseArticleContent } from "@/src/utils/article";
 
 // Environment variables
 const CRON_SECRET = process.env.CRON_SECRET;

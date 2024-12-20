@@ -6,7 +6,7 @@ import { db } from "@/src/db";
 import { articles } from "@/src/db/schema";
 
 import { generateArticle } from "@/src/services/gemini";
-import { parseArticleContent } from "../articles/route";
+import { parseArticleContent } from "@/src/utils/article";
 
 export async function GET(request: Request) {
     const { searchParams } = new URL(request.url);
