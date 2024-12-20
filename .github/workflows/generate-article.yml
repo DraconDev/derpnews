@@ -11,9 +11,12 @@ jobs:
         steps:
             - name: Generate Article
               run: |
+                  # Store secret in a variable first
+                  SECRET="${{ secrets.CRON_SECRET }}"
+                  # Use the variable in JSON payload
                   response=$(curl -X POST \
                   -H "Content-Type: application/json" \
-                  -d '{"secret":"${{ secrets.CRON_SECRET }}"}' \
+                  -d "{\"secret\":\"$SECRET\"}" \
                   ${{ secrets.SITE_URL }}/api/cron/generate -w "\n%{http_code}")
                   echo "Response: $response"
                   if [[ $(echo "$response" | tail -n1) != "200" ]]; then
