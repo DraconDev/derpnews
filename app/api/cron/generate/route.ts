@@ -27,7 +27,7 @@ export async function POST(request: Request) {
         );
     }
 
-    const { CRON_SECRET: secret } = await request.json();
+    const { secret } = await request.json();
 
     if (secret !== CRON_SECRET) {
         log("error", "Invalid secret provided");
