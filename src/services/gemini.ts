@@ -13,7 +13,7 @@ export async function generateArticle() {
 
     try {
         const model = genAI.getGenerativeModel({
-            model: "gemini-pro",
+            model: "gemini-2.0-fast-exp",
         });
         log("debug", "Initialized Gemini model");
 

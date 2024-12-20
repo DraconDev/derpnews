@@ -674,8 +674,6 @@ export function generatePrompt(): string {
 
     const fullPrompt = `${basePrompt}
 
-Response must be strictly in this JSON format
-
 The article should be humorous and absurd while maintaining a ${tone} news-like tone.
 Include quotes from relevant parties that highlight the absurdity of the situation.
 Add specific details that make the story more believable despite its ridiculousness.
