@@ -35,26 +35,33 @@ export async function POST(request: Request) {
     }
 
     try {
-        log("info", "Starting article generation");
+        log("info", "Starting article generation in route handler");
         const rawArticle = await generateArticle();
 
         if (!rawArticle) {
+            log("error", "Generated article is empty in route handler");
             return NextResponse.json(
                 { error: "Generated article is empty" },
                 { status: 500 }
             );
         }
 
+        log("debug", "Raw article received", { length: rawArticle.length });
         const article = parseArticleContent(rawArticle);
 
         if (!article) {
+            log("error", "Failed to parse article content in route handler");
             return NextResponse.json(
                 { error: "Failed to parse article content" },
                 { status: 500 }
             );
         }
 
-        log("debug", "Successfully parsed article content");
+        log("debug", "Article parsed successfully", { 
+            title: article.title,
+            summaryLength: article.summary?.length,
+            contentLength: article.content?.length 
+        });
 
         const [newArticle] = await db
             .insert(articles)
@@ -64,9 +71,16 @@ export async function POST(request: Request) {
         log("info", "Successfully created new article", {
             id: newArticle.id,
             title: newArticle.title,
+            timestamp: new Date().toISOString()
         });
 
-        return NextResponse.json(newArticle);
+        return NextResponse.json({ 
+            success: true,
+            article: {
+                id: newArticle.id,
+                title: newArticle.title
+            }
+        });
     } catch (error) {
         const errorMessage =
             error instanceof Error ? error.message : "Unknown error";

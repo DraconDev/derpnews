@@ -18,6 +18,11 @@ jobs:
         steps:
             - name: Generate Article
               run: |
-                  curl -X POST ${{ secrets.SITE_URL }}/api/cron/generate \
+                  response=$(curl -X POST ${{ secrets.SITE_URL }}/api/cron/generate \
                     -H "Content-Type: application/json" \
-                    -d "{\"secret\": \"${CRON_SECRET}\"}"
+                    -d "{\"secret\": \"${CRON_SECRET}\"}")
+                  echo "API Response: $response"
+                  if echo "$response" | grep -q "error"; then
+                    echo "Error detected in response"
+                    exit 1
+                  fi
