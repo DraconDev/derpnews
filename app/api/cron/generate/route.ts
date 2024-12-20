@@ -44,7 +44,7 @@ export async function POST(request: Request) {
 
         log("info", "Starting article generation");
         const rawArticle = await generateArticle();
-        
+
         if (!rawArticle) {
             log("error", "Received empty article from Gemini");
             return NextResponse.json(
@@ -52,21 +52,20 @@ export async function POST(request: Request) {
                 { status: 500 }
             );
         }
-        
+
         log("debug", "Received raw article from Gemini", { raw: rawArticle });
 
+        const article = parseArticleContent(rawArticle);
+        log("debug", "Successfully parsed article content");
+
+        if (!article.title || !article.content || !article.summary) {
+            log("error", "Invalid article format", { article });
+            return NextResponse.json(
+                { error: "Generated article is missing required fields" },
+                { status: 500 }
+            );
+        }
         try {
-            const article = parseArticleContent(rawArticle);
-            log("debug", "Successfully parsed article content");
-
-            if (!article.title || !article.content || !article.summary) {
-                log("error", "Invalid article format", { article });
-                return NextResponse.json(
-                    { error: "Generated article is missing required fields" },
-                    { status: 500 }
-                );
-            }
-
             const [newArticle] = await db
                 .insert(articles)
                 .values(article)
@@ -80,8 +79,11 @@ export async function POST(request: Request) {
             return NextResponse.json(newArticle);
         } catch (parseError) {
             log("error", "Failed to parse article content", {
-                error: parseError instanceof Error ? parseError.message : "Unknown parse error",
-                raw: rawArticle
+                error:
+                    parseError instanceof Error
+                        ? parseError.message
+                        : "Unknown parse error",
+                raw: rawArticle,
             });
             return NextResponse.json(
                 { error: "Failed to parse generated article" },
@@ -89,7 +91,8 @@ export async function POST(request: Request) {
             );
         }
     } catch (error) {
-        const errorMessage = error instanceof Error ? error.message : "Unknown error";
+        const errorMessage =
+            error instanceof Error ? error.message : "Unknown error";
         log("error", "Failed to generate article", { error: errorMessage });
         return NextResponse.json(
             { error: `Failed to generate article: ${errorMessage}` },
