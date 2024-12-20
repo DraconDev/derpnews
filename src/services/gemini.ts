@@ -2,7 +2,11 @@ import { GoogleGenerativeAI } from "@google/generative-ai";
 import { log } from "@/src/utils/logger";
 import { generatePrompt } from "./promptGenerator";
 
-const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY!);
+if (!process.env.GEMINI_API_KEY) {
+    throw new Error("GEMINI_API_KEY environment variable is required");
+}
+
+const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
 
 export async function generateArticle() {
     log("info", "Starting article generation");
@@ -17,10 +21,22 @@ export async function generateArticle() {
         log("debug", "Generated prompt", { prompt });
 
         const result = await model.generateContent(prompt);
-        const response = await result.response;
+
+        if (!result || !result.response) {
+            log("error", "Empty response from Gemini");
+            throw new Error("Empty response from Gemini API");
+        }
+
+        const response = result.response;
         const text = response.text();
+
+        if (!text) {
+            log("error", "Empty text in Gemini response");
+            throw new Error("Empty text in Gemini response");
+        }
+
         log("debug", "Received response from Gemini", { response: text });
-        
+
         return text;
     } catch (error) {
         log("error", "Error generating article", {
