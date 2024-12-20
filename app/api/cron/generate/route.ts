@@ -5,25 +5,41 @@ import { articles } from "@/src/db/schema";
 import { log } from "@/src/utils/logger";
 import { parseArticleContent } from "../../articles/route";
 
-// Add a simple secret key validation
+// Environment variables
 const CRON_SECRET = process.env.CRON_SECRET;
 const GEMINI_API_KEY = process.env.GEMINI_API_KEY;
 
-// Validate required environment variables
-if (!GEMINI_API_KEY) {
-    log("error", "GEMINI_API_KEY is not set");
-    throw new Error("GEMINI_API_KEY is required");
-}
-
-if (!CRON_SECRET) {
-    log("error", "CRON_SECRET is not set");
-    throw new Error("CRON_SECRET is required");
-}
-
 export async function POST(request: Request) {
+    // Check environment variables first
+    if (!GEMINI_API_KEY) {
+        log("error", "GEMINI_API_KEY is not set");
+        return NextResponse.json(
+            { error: "GEMINI_API_KEY is required" },
+            { status: 500 }
+        );
+    }
+
+    if (!CRON_SECRET) {
+        log("error", "CRON_SECRET is not set");
+        return NextResponse.json(
+            { error: "CRON_SECRET is required" },
+            { status: 500 }
+        );
+    }
+
     try {
         // Validate the secret from the request
-        const body = await request.json();
+        let body;
+        try {
+            body = await request.json();
+        } catch (error) {
+            log("error", "Failed to parse request body", { error });
+            return NextResponse.json(
+                { error: "Invalid JSON in request body" },
+                { status: 400 }
+            );
+        }
+
         const { secret } = body;
 
         if (!secret) {
@@ -44,9 +60,23 @@ export async function POST(request: Request) {
 
         log("info", "Starting article generation");
         const rawArticle = await generateArticle();
-        log("debug", "Received raw article from Gemini", { raw: rawArticle });
+
+        if (!rawArticle) {
+            return NextResponse.json(
+                { error: "Generated article is empty" },
+                { status: 500 }
+            );
+        }
 
         const article = parseArticleContent(rawArticle);
+
+        if (!article) {
+            return NextResponse.json(
+                { error: "Failed to parse article content" },
+                { status: 500 }
+            );
+        }
+
         log("debug", "Successfully parsed article content");
 
         const [newArticle] = await db
@@ -61,10 +91,11 @@ export async function POST(request: Request) {
 
         return NextResponse.json(newArticle);
     } catch (error) {
-        const errorMessage = error instanceof Error ? error.message : "Unknown error";
+        const errorMessage =
+            error instanceof Error ? error.message : "Unknown error";
         log("error", "Failed to generate article", { error: errorMessage });
         return NextResponse.json(
-            { error: "Failed to generate article" },
+            { error: `Failed to generate article: ${errorMessage}` },
             { status: 500 }
         );
     }
