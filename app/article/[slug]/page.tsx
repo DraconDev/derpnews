@@ -6,28 +6,27 @@ import { useEffect, useState } from "react";
 import { Clock, ArrowLeft } from "lucide-react";
 
 export default function ArticlePage() {
-    const { id } = useParams<{ id: string }>();
+    const { slug } = useParams<{ slug: string }>();
     const [article, setArticle] = useState<ArticleType | null>(null);
 
     useEffect(() => {
-        async function getArticleById(id: number) {
-            const res = await fetch(`/api/article?id=${id}`, {
+        async function getArticleBySlug(slug: string) {
+            const res = await fetch(`/api/article?slug=${encodeURIComponent(slug)}`, {
                 method: "GET",
             });
             if (!res.ok) {
                 notFound();
             }
             const [result] = await res.json();
-
             setArticle(result);
         }
 
-        if (!id) {
+        if (!slug) {
             notFound();
         }
 
-        getArticleById(parseInt(id));
-    }, [id]);
+        getArticleBySlug(slug);
+    }, [slug]);
 
     return (
         <main className="min-h-screen flex flex-col bg-gradient-to-b from-slate-950 to-slate-900">

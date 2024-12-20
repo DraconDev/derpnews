@@ -4,6 +4,7 @@ import { db } from "@/src/db";
 import { articles } from "@/src/db/schema";
 import { log } from "@/src/utils/logger";
 import { parseArticleContent } from "@/src/utils/article";
+import { generateSlug } from "@/src/utils/slug";
 
 // Environment variables
 const CRON_SECRET = process.env.CRON_SECRET;
@@ -96,9 +97,11 @@ export async function POST(request: Request) {
                 contentLength: article.content?.length,
             });
 
+            const slug = generateSlug(article.title);
+
             const [newArticle] = await db
                 .insert(articles)
-                .values(article)
+                .values({ ...article, slug })
                 .returning();
 
             log("info", "Successfully created new article", {

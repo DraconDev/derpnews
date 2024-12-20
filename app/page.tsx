@@ -57,7 +57,7 @@ export default function Home() {
                         articles.map((article, index) => (
                             <Link
                                 key={article.id}
-                                href={`/article/${article.id}`}
+                                href={`/article/${article.slug}`}
                                 className="group"
                                 style={{
                                     animationDelay: `${index * 100}ms`,

@@ -1,40 +1,41 @@
 import { log } from "@/src/utils/logger";
 import { eq } from "drizzle-orm";
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 
 import { db } from "@/src/db";
 import { articles } from "@/src/db/schema";
 
 import { generateArticle } from "@/src/services/gemini";
 import { parseArticleContent } from "@/src/utils/article";
+import { generateSlug } from "@/src/utils/slug";
 
-export async function GET(request: Request) {
-    const { searchParams } = new URL(request.url);
-    const id = searchParams.get("id");
-
-    if (!id || typeof id !== "string") {
-        return NextResponse.json({ error: "Invalid id" }, { status: 400 });
-    }
-
+export async function GET(request: NextRequest) {
     try {
-        const article = await db
-            .select()
-            .from(articles)
-            .where(eq(articles.id, parseInt(id)))
-            .limit(1);
+        const searchParams = request.nextUrl.searchParams;
+        const id = searchParams.get("id");
+        const slug = searchParams.get("slug");
 
-        if (!article) {
-            return NextResponse.json(
-                { error: "Article not found" },
-                { status: 404 }
-            );
+        if (!id && !slug) {
+            // Return all articles if no specific query
+            const result = await db
+                .select()
+                .from(articles)
+                .orderBy(articles.createdAt);
+            return NextResponse.json(result);
         }
 
-        return NextResponse.json(article);
+        // Query by slug if provided, otherwise by id
+        const result = await db
+            .select()
+            .from(articles)
+            .where(
+                slug ? eq(articles.slug, slug) : eq(articles.id, parseInt(id!))
+            )
+            .limit(1);
+
+        return NextResponse.json(result);
     } catch (error) {
-        console.log("error", "Failed to fetch article", {
-            error: error instanceof Error ? error.message : "Unknown error",
-        });
+        console.error("Error fetching article:", error);
         return NextResponse.json(
             { error: "Failed to fetch article" },
             { status: 500 }
@@ -60,9 +61,11 @@ export async function POST() {
             );
         }
 
+        const slug = generateSlug(article.title);
+
         const [newArticle] = await db
             .insert(articles)
-            .values(article)
+            .values({ ...article, slug })
             .returning();
 
         log("info", "Successfully created new article", {
